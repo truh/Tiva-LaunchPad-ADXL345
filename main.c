@@ -1,7 +1,12 @@
 //*****************************************************************************
 //
-// master_slave_loopback.c - Example demonstrating a simple I2C message
-//                           transmission and reception.
+// main.c
+//
+// Copyright (c) 2014 Jakob Klepp
+//
+//*****************************************************************************
+//
+//                  Based on "master_slave_loopback.c":
 //
 // Copyright (c) 2010-2014 Texas Instruments Incorporated.  All rights reserved.
 // Software License Agreement
