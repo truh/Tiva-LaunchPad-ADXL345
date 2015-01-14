@@ -5,6 +5,7 @@
 #######################################
 # TARGET: name of the output file
 TARGET = main
+ARCHIV = ADXL345_Klepp
 #######################################
 # MCU: part number to build for
 MCU = TM4C123GH6PM
@@ -126,6 +127,7 @@ OBJECTS = $(addprefix $(OUTDIR)/,$(notdir $(SOURCES:=.o)))
 
 # default: build bin
 all: $(OUTDIR)/$(TARGET).bin
+all: $(OUTDIR)/$(ARCHIV).zip
 
 $(OUTDIR)/%.c.o: %.c | $(OUTDIR)
 	$(C) -o $@ $^ $(CFLAGS)
@@ -142,6 +144,9 @@ $(OUTDIR)/$(TARGET).bin: $(OUTDIR)/$(TARGET)
 # create the output directory
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
+
+$(OUTDIR)/$(ARCHIV).zip:
+	zip -r $(OUTDIR)/$(ARCHIV).zip . -x build/* -x build/
 
 flash: $(OUTDIR)/$(TARGET).bin
 	lm4flash $(OUTDIR)/$(TARGET).bin
