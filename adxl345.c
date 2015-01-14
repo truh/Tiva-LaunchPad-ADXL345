@@ -90,7 +90,7 @@ void InitI2C(void) {
    * to see which functions are allocated per pin.
    * TODO(TI): change this to select the port/pin you are using.
    */
-  GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_2 | GPIO_PIN_3);
+  GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_3);
   GPIOPinTypeI2CSCL(GPIO_PORTB_BASE, GPIO_PIN_2);
 
   /*

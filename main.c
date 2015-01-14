@@ -153,7 +153,7 @@ void loop(void) {
   y = ADXL_getAcceleration_Y();
   z = ADXL_getAcceleration_Z();
 
-  UARTprintf("\rX=%i, Y=%i, Z=%i         ", x, y, z);
+  UARTprintf("  X=%i, Y=%i, Z=%i         \r", x, y, z);
 }
 
 /******************************************************************************
