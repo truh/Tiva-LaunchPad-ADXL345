@@ -127,7 +127,9 @@ OBJECTS = $(addprefix $(OUTDIR)/,$(notdir $(SOURCES:=.o)))
 
 # default: build bin
 all: $(OUTDIR)/$(TARGET).bin
-all: $(OUTDIR)/$(ARCHIV).zip
+#all: $(OUTDIR)/$(ARCHIV).zip
+
+archiv: $(OUTDIR)/$(ARCHIV).zip
 
 $(OUTDIR)/%.c.o: %.c | $(OUTDIR)
 	$(C) -o $@ $^ $(CFLAGS)
@@ -145,7 +147,10 @@ $(OUTDIR)/$(TARGET).bin: $(OUTDIR)/$(TARGET)
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
 
-$(OUTDIR)/$(ARCHIV).zip:
+README.pdf:
+	rst2pdf README.rst
+
+$(OUTDIR)/$(ARCHIV).zip: README.pdf
 	zip -r $(OUTDIR)/$(ARCHIV).zip . -x build/* -x build/
 
 flash: $(OUTDIR)/$(TARGET).bin
@@ -158,6 +163,7 @@ debug: clean $(OUTDIR)/$(TARGET).bin
 
 clean:
 	-$(RM) $(OUTDIR)/*
+	-$(RM) README.pdf
 
 print_objs:
 	echo $(OBJECTS)

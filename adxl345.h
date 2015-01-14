@@ -118,13 +118,6 @@ void I2C_checkError(void);
 
 /******************************************************************************
  *
- * Return the id of the accelerometer.
- *
- *****************************************************************************/
-int8_t ADXL_getAccelerometer_ID(void);
-
-/******************************************************************************
- *
  * Set the power mode of the accelerometer.
  *
  *****************************************************************************/
@@ -132,41 +125,41 @@ void ADXL_SetPowerMode(uint8_t powerMode);
 
 /******************************************************************************
  *
- * Reads the raw acceleration  of the x axisfrom the adxl345
+ * Reads the raw acceleration of the x axisfrom the adxl345
  *
  *****************************************************************************/
 int16_t ADXL_getAcceleration_rawX(void);
 
 /******************************************************************************
  *
- * Reads the raw acceleration  of the x axisfrom the adxl345
+ * Reads the raw acceleration of the y axis from the adxl345
  *
  *****************************************************************************/
 int16_t ADXL_getAcceleration_rawY(void);
 /******************************************************************************
  *
- * Reads the raw acceleration  of the x axisfrom the adxl345
+ * Reads the raw acceleration of the z axis from the adxl345
  *
  *****************************************************************************/
 int16_t ADXL_getAcceleration_rawZ(void);
 
 /******************************************************************************
  *
- * Reads the decoded acceleration  of the x axisfrom the adxl345
+ * Reads the decoded acceleration of the x axis from the adxl345
  *
  *****************************************************************************/
 int32_t ADXL_getAcceleration_X(void);
 
 /******************************************************************************
  *
- * Reads the decoded acceleration  of the x axisfrom the adxl345
+ * Reads the decoded acceleration of the y axis from the adxl345
  *
  *****************************************************************************/
 int32_t ADXL_getAcceleration_Y(void);
 
 /******************************************************************************
  *
- * Reads the decoded acceleration  of the x axisfrom the adxl345
+ * Reads the decoded acceleration of the z axis from the adxl345
  *
  *****************************************************************************/
 int32_t ADXL_getAcceleration_Z(void);
