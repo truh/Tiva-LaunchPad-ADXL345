@@ -15,7 +15,6 @@
  *****************************************************************************/
 int8_t ReadI2C(uint16_t device_address, uint16_t device_register) {
   int8_t data = 0;
-  int32_t error;
 
   /* Set the Slave Address and write */
   I2CMasterSlaveAddrSet(I2C0_BASE, device_address, WRITE);
@@ -25,26 +24,14 @@ int8_t ReadI2C(uint16_t device_address, uint16_t device_register) {
   I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_SEND);
   /* Waiting until the Master is done */
   while (I2CMasterBusy(I2C0_BASE)) {}
-  /* Get error code, if there is one */
-  error = I2CMasterErr(I2C0_BASE);
-  if (error != I2C_MASTER_ERR_NONE) {
-    UARTprintf("\n[%s:%i] error != I2C_MASTER_ERR_NONE: %i \n",
-               __FILE__, __LINE__,
-               error);
-  }
+  I2C_checkError();
   /* Set the Slave Address and read */
   I2CMasterSlaveAddrSet(I2C0_BASE, device_address, READ);
   /* Reiciving Data */
   I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_RECEIVE);
   /* Waiting until the Master is done */
   while (I2CMasterBusy(I2C0_BASE)) {}
-  /* Get error code, if there is one */
-  error = I2CMasterErr(I2C0_BASE);
-  if (error != I2C_MASTER_ERR_NONE) {
-    UARTprintf("\n[%s:%i] error != I2C_MASTER_ERR_NONE: %i \n",
-               __FILE__, __LINE__,
-               error);
-  }
+  I2C_checkError();
   /* Fetching the Data out of the register */
   data = (int8_t) I2CMasterDataGet(I2C0_BASE);
   /* Return the data */
@@ -158,8 +145,6 @@ int8_t ADXL_getAccelerometer_ID(void) {
  *
  *****************************************************************************/
 void ADXL_SetPowerMode(uint8_t powerMode) {
-  int32_t error;
-
   /* Set the Slave Address and write */
   I2CMasterSlaveAddrSet(I2C0_BASE, SLAVE_ADDRESS, WRITE);
 
@@ -171,15 +156,7 @@ void ADXL_SetPowerMode(uint8_t powerMode) {
 
   /* Waiting until the Master is done */
   while (I2CMasterBusy(I2C0_BASE)) {}
-
-  /* Get error code, if there is one */
-  error = I2CMasterErr(I2C0_BASE);
-
-  if (error != I2C_MASTER_ERR_NONE) {
-    UARTprintf("\n[%s:%i] error != I2C_MASTER_ERR_NONE: %i \n",
-               __FILE__, __LINE__,
-               error);
-  }
+  I2C_checkError();
 }
 
 /******************************************************************************
