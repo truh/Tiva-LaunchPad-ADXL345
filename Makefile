@@ -112,8 +112,10 @@ CLANG_FLAGS += $(CLANG_INCLUDES)
 #######################################
 # binaries
 #######################################
-C       = clang $(CLANG_FLAGS)
-C++     = clang++ $(CLANG_FLAGS)
+#C       = clang $(CLANG_FLAGS)
+#C++     = clang++ $(CLANG_FLAGS)
+C       = arm-none-eabi-gcc
+C++     = arm-none-eabi-g++
 LD      = arm-none-eabi-ld
 OBJCOPY = arm-none-eabi-objcopy
 RM      = rm -f
