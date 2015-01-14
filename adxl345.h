@@ -33,14 +33,6 @@
  *
  *****************************************************************************/
 #define ADXL_ALT_ADDRESS_HIGH 0x1D
-/******************************************************************************
- * The 8-bit address for writing when the "alt address pin" is high.
- *****************************************************************************/
-#define ADXL_ALT_ADDRESS_HIGH_WRITE (ADXL_ALT_ADDRESS_HIGH << 1)
-/******************************************************************************
- * The 8-bit address for reading when the "alt address pin" is high.
- *****************************************************************************/
-#define ADXL_ALT_ADDRESS_HIGH_READ ((ADXL_ALT_ADDRESS_HIGH << 1) + 1)
 
 /******************************************************************************
  *
@@ -48,25 +40,30 @@
  *
  *****************************************************************************/
 #define ADXL_ALT_ADDRESS_LOW 0x53
-/******************************************************************************
- * The 8-bit address for writing when the "alt address pin" is high.
- *****************************************************************************/
-#define ADXL_ALT_ADDRESS_LOW_WRITE (ADXL_ALT_ADDRESS_LOW << 1)
-/******************************************************************************
- * The 8-bit address for reading when the "alt address pin" is high.
- *****************************************************************************/
-#define ADXL_ALT_ADDRESS_LOW_READ ((ADXL_ALT_ADDRESS_LOW << 1) + 1)
 
+/******************************************************************************
+ *
+ * Followed by the R/W bit
+ *
+ *****************************************************************************/
+#define WRITE 0
+#define READ 1
+
+/******************************************************************************
+ *
+ * Full registermap can be seen in the Register Map example on page 23
+ * of the ADXL345.pdf file.
+ *
+ *****************************************************************************/
 #define ADXL_AXIS_X_P0 0x32
 #define ADXL_AXIS_X_P1 0x33
 #define ADXL_AXIS_Y_P0 0x34
 #define ADXL_AXIS_Y_P1 0x35
 #define ADXL_AXIS_Z_P0 0x36
 #define ADXL_AXIS_Z_P1 0x37
-#define ADXL_POWER_MODE 0x3f
 #define ADXL_POWER_MODE_REGISTER 0x2D
-#define WRITE false
-#define READ true
+
+#define ADXL_POWER_MODE 0x3f
 
 /******************************************************************************
  *
@@ -113,6 +110,14 @@ void InitI2C(void);
 
 /******************************************************************************
  *
+ * Check if there was an I2C error.
+ * Write it to UART if there was one.
+ *
+ *****************************************************************************/
+void I2C_checkError(void);
+
+/******************************************************************************
+ *
  * Return the id of the accelerometer.
  *
  *****************************************************************************/
@@ -138,7 +143,6 @@ int16_t ADXL_getAcceleration_rawX(void);
  *
  *****************************************************************************/
 int16_t ADXL_getAcceleration_rawY(void);
-
 /******************************************************************************
  *
  * Reads the raw acceleration  of the x axisfrom the adxl345

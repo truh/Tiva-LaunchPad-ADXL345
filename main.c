@@ -146,6 +146,16 @@ void InitConsole(void) {
   UARTStdioConfig(0, 115200, 16000000);
 }
 
+void loop(void) {
+  int32_t x, y, z;
+
+  x = ADXL_getAcceleration_X();
+  y = ADXL_getAcceleration_Y();
+  z = ADXL_getAcceleration_Z();
+
+  UARTprintf("\rX=%i, Y=%i, Z=%i         ", x, y, z);
+}
+
 /******************************************************************************
  *
  * Configure the I2C0 master and slave and connect them using loopback mode.
@@ -170,10 +180,10 @@ int main(void) {
   InitConsole();
 
   /* Display the example setup on the console. */
-  UARTprintf("I2C Loopback Example ->");
-  UARTprintf("\n   Module = I2C0");
-  UARTprintf("\n   Mode = Single Send/Receive");
-  UARTprintf("\n   Rate = 100kbps\n\n");
+  while (true) {
+    SysCtlDelay(SysCtlClockGet() / 4);
+    loop();
+  }
 
   /* Return no errors */
   return (0);

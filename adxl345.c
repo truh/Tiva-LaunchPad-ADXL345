@@ -14,24 +14,48 @@
  *
  *****************************************************************************/
 int8_t ReadI2C(uint16_t device_address, uint16_t device_register) {
-  int8_t byteIn;
+  int8_t data = 0;
+  int32_t error;
 
-  /* Tell the master to read data. */
-  I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_RECEIVE);
-
-  /* Wait until the slave is done sending data. */
-  while (!(I2CSlaveStatus(I2C0_BASE) & I2C_SLAVE_ACT_TREQ)) {
+  /* Set the Slave Address and write */
+  I2CMasterSlaveAddrSet(I2C0_BASE, device_address, WRITE);
+  /* Set the Register / Data to get */
+  I2CMasterDataPut(I2C0_BASE, device_register);
+  /* Sending */
+  I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_SEND);
+  /* Waiting until the Master is done */
+  while (I2CMasterBusy(I2C0_BASE)) {}
+  /* Get error code, if there is one */
+  error = I2CMasterErr(I2C0_BASE);
+  if (error != I2C_MASTER_ERR_NONE) {
+    UARTprintf("\n[%s:%i] error != I2C_MASTER_ERR_NONE: %i \n",
+               __FILE__, __LINE__,
+               error);
   }
-
-  /* Read the data from the master. */
-  byteIn = I2CMasterDataGet(I2C0_BASE);
-
-  return byteIn;
+  /* Set the Slave Address and read */
+  I2CMasterSlaveAddrSet(I2C0_BASE, device_address, READ);
+  /* Reiciving Data */
+  I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_RECEIVE);
+  /* Waiting until the Master is done */
+  while (I2CMasterBusy(I2C0_BASE)) {}
+  /* Get error code, if there is one */
+  error = I2CMasterErr(I2C0_BASE);
+  if (error != I2C_MASTER_ERR_NONE) {
+    UARTprintf("\n[%s:%i] error != I2C_MASTER_ERR_NONE: %i \n",
+               __FILE__, __LINE__,
+               error);
+  }
+  /* Fetching the Data out of the register */
+  data = (int8_t) I2CMasterDataGet(I2C0_BASE);
+  /* Return the data */
+  return data;
 }
 
-/*
+/******************************************************************************
+ *
  * Write a byte of data to given device address and register
- */
+ *
+ *****************************************************************************/
 void WriteI2C(uint16_t device_address, uint16_t device_register,
                int8_t device_data) {
   /* Place the data to be sent in the data register */
@@ -79,8 +103,8 @@ void InitI2C(void) {
    * to see which functions are allocated per pin.
    * TODO(TI): change this to select the port/pin you are using.
    */
+  GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_2 | GPIO_PIN_3);
   GPIOPinTypeI2CSCL(GPIO_PORTB_BASE, GPIO_PIN_2);
-  GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_3);
 
   /*
    * Enable and initialize the I2C0 master module.  Use the system clock for
@@ -99,17 +123,24 @@ void InitI2C(void) {
    * the slave.
    */
   I2CMasterSlaveAddrSet(I2C0_BASE, SLAVE_ADDRESS, false);
+}
 
-  /*
-   * Enable loopback mode.  Loopback mode is a built in feature that is
-   * useful for debugging I2C operations.  It internally connects the I2C
-   * master and slave terminals, which effectively let's you send data as
-   * a master and receive data as a slave.
-   * NOTE: For external I2C operation you will need to use external pullups
-   * that are stronger than the internal pullups.  Refer to the datasheet for
-   * more information.
-   */
-  HWREG(I2C0_BASE + I2C_O_MCR) |= 0x01;
+/******************************************************************************
+ *
+ * Check if there was an I2C error.
+ * Write it to UART if there was one.
+ *
+ *****************************************************************************/
+void I2C_checkError(void) {
+  int32_t error;
+
+  /* Get error code, if there is one */
+  error = I2CMasterErr(I2C0_BASE);
+  if (error != I2C_MASTER_ERR_NONE) {
+    UARTprintf("\n[%s:%i] error != I2C_MASTER_ERR_NONE: %i \n",
+               __FILE__, __LINE__,
+               error);
+  }
 }
 
 /******************************************************************************
@@ -127,6 +158,8 @@ int8_t ADXL_getAccelerometer_ID(void) {
  *
  *****************************************************************************/
 void ADXL_SetPowerMode(uint8_t powerMode) {
+  int32_t error;
+
   /* Set the Slave Address and write */
   I2CMasterSlaveAddrSet(I2C0_BASE, SLAVE_ADDRESS, WRITE);
 
@@ -140,10 +173,12 @@ void ADXL_SetPowerMode(uint8_t powerMode) {
   while (I2CMasterBusy(I2C0_BASE)) {}
 
   /* Get error code, if there is one */
-  int8_t error = I2CMasterErr(I2C0_BASE);
+  error = I2CMasterErr(I2C0_BASE);
 
   if (error != I2C_MASTER_ERR_NONE) {
-    UARTprintf("\n error-code : %i \n", error);
+    UARTprintf("\n[%s:%i] error != I2C_MASTER_ERR_NONE: %i \n",
+               __FILE__, __LINE__,
+               error);
   }
 }
 
@@ -157,10 +192,31 @@ void ADXL_SetPowerMode(uint8_t powerMode) {
 int32_t __convertRawToDecimal(const int16_t rawValue) {
   int32_t value;
 
-  /* TODO(jakob): find out the right algorithm */
-  value = rawValue << 2;
+  /* multiply time 4 (for whatever reason) */
+  value = rawValue * 4;
 
   return value;
+}
+
+/******************************************************************************
+ *
+ * private
+ *
+ * Retrieve sensor data from these 2 registers.
+ *
+ *****************************************************************************/
+int16_t __getAcceleration_raw(int8_t p0, int8_t p1) {
+  int8_t data_p0, data_p1;
+  int16_t data;
+
+  ADXL_SetPowerMode(ADXL_POWER_MODE);
+
+  data_p0 = ReadI2C(SLAVE_ADDRESS, p0);
+  data_p1 = ReadI2C(SLAVE_ADDRESS, p1);
+
+  data = (data_p1 << 8) | data_p0;
+
+  return data;
 }
 
 /******************************************************************************
@@ -169,7 +225,7 @@ int32_t __convertRawToDecimal(const int16_t rawValue) {
  *
  *****************************************************************************/
 int16_t ADXL_getAcceleration_rawX(void) {
-
+  return __getAcceleration_raw(ADXL_AXIS_X_P0, ADXL_AXIS_X_P1);
 }
 
 /******************************************************************************
@@ -178,7 +234,7 @@ int16_t ADXL_getAcceleration_rawX(void) {
  *
  *****************************************************************************/
 int16_t ADXL_getAcceleration_rawY(void) {
-
+  return __getAcceleration_raw(ADXL_AXIS_Y_P0, ADXL_AXIS_Y_P1);
 }
 
 /******************************************************************************
@@ -187,7 +243,7 @@ int16_t ADXL_getAcceleration_rawY(void) {
  *
  *****************************************************************************/
 int16_t ADXL_getAcceleration_rawZ(void) {
-
+  return __getAcceleration_raw(ADXL_AXIS_Z_P0, ADXL_AXIS_Z_P1);
 }
 
 /******************************************************************************
@@ -196,7 +252,7 @@ int16_t ADXL_getAcceleration_rawZ(void) {
  *
  *****************************************************************************/
 int32_t ADXL_getAcceleration_X(void) {
-
+  return __convertRawToDecimal(ADXL_getAcceleration_rawX());
 }
 
 /******************************************************************************
@@ -205,7 +261,7 @@ int32_t ADXL_getAcceleration_X(void) {
  *
  *****************************************************************************/
 int32_t ADXL_getAcceleration_Y(void) {
-
+  return __convertRawToDecimal(ADXL_getAcceleration_rawY());
 }
 
 /******************************************************************************
@@ -214,5 +270,5 @@ int32_t ADXL_getAcceleration_Y(void) {
  *
  *****************************************************************************/
 int32_t ADXL_getAcceleration_Z(void) {
-
+  return __convertRawToDecimal(ADXL_getAcceleration_rawZ());
 }
